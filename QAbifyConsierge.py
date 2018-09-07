@@ -59,7 +59,7 @@ def handle_command(command, channel):
 def contains_taxi(message):
     tokens = [word.lower() for word in message.strip().split()]
     return any(g in tokens
-               for g in ['taxi', 'taxis', 'Taxi', 'ride', 'cabify', 'lift', 'car'])
+               for g in ['taxi', 'taxis', 'Taxi', 'ride!', 'cabify', 'lift', 'car'])
 
 if __name__ == "__main__":
     if slack_client.rtm_connect(with_team_state=False):
