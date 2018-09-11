@@ -2,6 +2,9 @@ import os
 import time
 import re
 from slackclient import SlackClient
+from math import radians, cos, sin, asin, sqrt
+import json
+import urllib.request
 
 
 # instantiate Slack client
@@ -48,7 +51,6 @@ def handle_command(command, channel):
     # This is where you start to implement more commands!
     if contains_taxi(command):
         response = "Sure... where would you like to go to?"
-
     # Sends the response back to the channel
     slack_client.api_call(
         "chat.postMessage",
@@ -60,6 +62,41 @@ def contains_taxi(message):
     tokens = [word.lower() for word in message.strip().split()]
     return any(g in tokens
                for g in ['taxi', 'taxis', 'Taxi', 'ride!', 'cabify', 'lift', 'car'])
+
+def get_distance(pointA, pointB, typeOfDistance):
+    if typeOfDistance is 'crow_flies':
+        dist = haversine(pointA[0], pointA[1], pointB[0], pointB[1])
+        return dist
+    else:
+        dist = roadDistance(pointA[0], pointA[1], pointB[0], pointB[1])
+        return dist
+
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points 
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians 
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+    # haversine formula 
+    dlon = lon2 - lon1 
+    dlat = lat2 - lat1 
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a)) 
+    # Radius of earth in kilometers is 6371
+    km = 6371* c
+    return km
+
+def roadDistance(lon1, lat1, lon2, lat2):
+    point1 = lat1, lon1
+    point2 = lat2, lon2
+    url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2},{3}&mode=driving&language=en-EN&sensor=false".format(str(lat1),str(lon1),str(lat2),str(lon2))
+    req = urllib.request.Request(url)
+    response = urllib.request.urlopen(req)
+    result = json.load(response)
+    km = result['rows'][0]['elements'][0]['distance']['value']
+    return km/1000
+
 
 if __name__ == "__main__":
     if slack_client.rtm_connect(with_team_state=False):

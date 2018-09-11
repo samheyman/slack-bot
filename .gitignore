@@ -1,7 +1,13 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+test/__pycache__/
+test/__pycache__/*
+test/__pycache__/__init__.cpython-36.pyc
+
 *.py[cod]
 *$py.class
+
+
 
 .DS_Store
 .vscode
@@ -111,3 +117,6 @@ venv.bak/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+*/_pycache__*
+test/_pycache__*
+test/_pycache__/*
