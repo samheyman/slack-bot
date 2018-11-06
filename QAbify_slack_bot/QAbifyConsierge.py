@@ -6,7 +6,6 @@ from math import radians, cos, sin, asin, sqrt
 import json
 import urllib.request
 
-
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 # starterbot's user ID in Slack: value is assigned after the bot starts up
@@ -90,7 +89,7 @@ def haversine(lon1, lat1, lon2, lat2):
 def roadDistance(lon1, lat1, lon2, lat2):
     point1 = lat1, lon1
     point2 = lat2, lon2
-    url = "http://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2},{3}&mode=driving&language=en-EN&sensor=false".format(str(lat1),str(lon1),str(lat2),str(lon2))
+    url = "https://maps.googleapis.com/maps/api/distancematrix/json?origins={0},{1}&destinations={2},{3}&mode=driving&language=en-EN&sensor=false&key=AIzaSyCNmfg_E1JASzqwIMheoUBjd4weWbKcWmg".format(str(lat1),str(lon1),str(lat2),str(lon2))
     req = urllib.request.Request(url)
     response = urllib.request.urlopen(req)
     result = json.load(response)

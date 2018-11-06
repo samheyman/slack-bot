@@ -1,5 +1,13 @@
-Collecting selenium
-  Downloading https://files.pythonhosted.org/packages/b8/53/9cafbb616d20c7624ff31bcabd82e5cc9823206267664e68aa8acdde4629/selenium-3.14.0-py2.py3-none-any.whl (898kB)
-Requirement already satisfied: urllib3 in ./venv/lib/python3.6/site-packages (from selenium) (1.23)
-Installing collected packages: selenium
-Successfully installed selenium-3.14.0
+certifi==2018.8.24
+chardet==3.0.4
+idna==2.7
+pluggy==0.7.1
+py==1.6.0
+requests==2.19.1
+selenium==3.14.0
+six==1.11.0
+slackclient==1.2.1
+tox==3.2.1
+urllib3==1.23
+virtualenv==16.0.0
+websocket-client==0.54.0

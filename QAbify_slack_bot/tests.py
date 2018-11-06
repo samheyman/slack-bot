@@ -1,9 +1,8 @@
-# QAbifyconsierge_tests.py
+# tests.py
 # by Sam Heyman
 
 import unittest
 import QAbifyConsierge
-
 
 class TestTaxiCommands(unittest.TestCase):
     def test_taxi_order_valid(self):
@@ -12,7 +11,7 @@ class TestTaxiCommands(unittest.TestCase):
         self.assertEqual(expected, order, "The command failed to be acknowledged as a taxi request")
 
     def test_taxi_order_not_valid(self):
-        order = QAbifyConsierge.contains_taxi("hey! I need to go somewhere!")
+        order = QAbifyConsierge.contains_taxi("hey! I am lost!")
         expected = False
         self.assertEqual(expected, order, "The command failed to be acknowledged as a taxi request")
 
