@@ -21,9 +21,9 @@ class SlackBotUserTest(unittest.TestCase):
         emailBox = self.browser.find_element_by_id('email')  
         passwordBox = self.browser.find_element_by_id('password')
 
-        emailBox.send_keys('sam.heyman@gmail.com')
+        emailBox.send_keys('')
         emailBox.send_keys(Keys.ENTER)  
-        passwordBox.send_keys('552>NR2018s')
+        passwordBox.send_keys('')
         passwordBox.send_keys(Keys.ENTER)  
 
         time.sleep(10)  
