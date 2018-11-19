@@ -31,6 +31,11 @@ class TestTaxiCommands(unittest.TestCase):
         difference = result - expected
         self.assertLessEqual(difference,0.2)
 
+    def test_can_reserve_taxi(self):
+
+    def test_can_return_all_taxis(self):
+        
+
     
 # Run the tests
 if __name__ == "__main__":

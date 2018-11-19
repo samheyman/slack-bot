@@ -4,7 +4,9 @@ import re
 from slackclient import SlackClient
 from math import radians, cos, sin, asin, sqrt
 import json
-import urllib.request
+from urllib import request, parse
+
+TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
 
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -44,12 +46,21 @@ def handle_command(command, channel):
     """
     # Default response is help text for the user
     default_response = "Not sure what you mean. Try *{}*.".format(EXAMPLE_COMMAND)
-
+    # Add instructions for usage here: e.g. @QAbify test
+    # ...
+    # ...
     # Finds and executes the given command, filling in response
     response = None
     # This is where you start to implement more commands!
-    if contains_taxi(command):
+    if wants_all_taxis(command):
+        total_taxis = get_all_taxis()
+        reserve_taxi("madrid", "Hyundai")
+
+        response = "There are {} taxis in total.".format(total_taxis)
+    
+    elif contains_taxi(command):
         response = "Sure... where would you like to go to?"
+
     # Sends the response back to the channel
     slack_client.api_call(
         "chat.postMessage",
@@ -57,10 +68,48 @@ def handle_command(command, channel):
         text=response or default_response
     )
 
+def get_instruction(message):
+    # test *
+    # test city <city>
+    # test order <taxi ID>
+    
+
+    pass
+
 def contains_taxi(message):
     tokens = [word.lower() for word in message.strip().split()]
     return any(g in tokens
                for g in ['taxi', 'taxis', 'Taxi', 'ride!', 'cabify', 'lift', 'car'])
+
+def wants_all_taxis(message):
+    if message == "Return all taxis":
+        return True
+    else:
+        return False
+
+def get_all_taxis():
+    url = TAXI_ENDPOINT
+    req = request.Request(url)
+    response = request.urlopen(req)
+    result = json.load(response)
+    total_taxis = len(result)
+    return total_taxis
+
+def reserve_taxi(city, taxi_id):
+    url = "{}/{}/{}".format(TAXI_ENDPOINT, city, taxi_id)
+    taxi_data = parse.urlencode({"state": "hired"}).encode()
+    try:
+        req = request.Request(url)
+        response = request.urlopen(req, taxi_data)
+    except HTTPError as e:
+        print('The server couldn\'t fulfill the request.')
+        print('Error code: ', e.code)
+    except URLError as e:
+        print('We failed to reach a server.')
+        print('Reason: ', e.reason)
+    else:
+        result = json.load(response)
+        return taxi_id
 
 def get_distance(pointA, pointB, typeOfDistance):
     if typeOfDistance is 'crow_flies':
