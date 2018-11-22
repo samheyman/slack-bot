@@ -22,6 +22,7 @@ TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
 CITY = ""
 ADDRESS = ""
 
+
 def parse_bot_commands(slack_events):
     """
         Parses a list of events coming from the Slack RTM API to find bot commands.
