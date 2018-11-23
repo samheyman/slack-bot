@@ -6,8 +6,8 @@ from math import radians, cos, sin, asin, sqrt
 import json
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
+#from qabify_bot import utilities
 import utilities
-
 
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -21,6 +21,8 @@ MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
 TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
 CITY = ""
 ADDRESS = ""
+COORDINATES = (0,0)
+DESTINATION_ADDRESS = ""
 
 def parse_bot_commands(slack_events):
     """
@@ -28,10 +30,16 @@ def parse_bot_commands(slack_events):
         If a bot command is found, this function returns a tuple of command and channel.
         If its not found, then this function returns None, None.
     """
+    print("slack event: {}".format(slack_events))
+
     for event in slack_events:
+        print("Event: {}".format(event["type"]))
         if event["type"] == "message" and not "subtype" in event:
+            print("Message: {}".format(event["text"]))
             user_id, message = parse_direct_mention(event["text"])
-            if user_id == starterbot_id:
+            print("User ID: {}".format(user_id))
+            if user_id == starterbot_id or user_id == 'UCPF17NBX':
+                print("Message: {}".format(message))
                 return message, event["channel"]
     return None, None
 
@@ -52,18 +60,14 @@ def handle_command(command, channel):
     default_response = "Sorry I did not understand you command. Try: "
     for example in EXAMPLE_COMMAND:
         default_response+= "\n - " + example
-    # Add instructions for usage here: e.g. @QAbify test
-    # all taxis
-    # all taxis in city
-    # taxi 242
-    # book nearest taxi
-    # book taxi
-    # ...
     # Finds and executes the given command, filling in response
     response = None
     # This is where you start to implement more commands!
     global CITY
-
+    global ADDRESS
+    global COORDINATES
+    global DESTINATION_ADDRESS
+    
     if command.startswith("all taxis in"):
         city = command.replace('all taxis in ','')
         city = city.split(' ')[0]
@@ -75,6 +79,13 @@ def handle_command(command, channel):
                 response += "\n - {}".format(taxi["name"])
         else:
             response = "Sorry, there are currently no taxis in {}".format(city)
+
+    elif command.startswith("address is "):
+        address = command.replace('address is ','')
+        ADDRESS = address
+        coordinates = utilities.get_geocoordinates(address)
+        COORDINATES = coordinates
+        response = "Your address is: {}\nYour coordinates are: {}".format(address, coordinates)
 
     elif command.startswith("all taxis"):
         taxis = get_taxis()
@@ -100,14 +111,14 @@ def handle_command(command, channel):
                 response = "Could not get information for taxi {}".format(taxi_id)
 
     elif command.startswith("book taxi to"):
-        address = command.replace('book taxi to ','')
-        if address == "":
+        destination_address = command.replace('book taxi to ','')
+        if ADDRESS == "":
+            response = "Please specify your address, for e.g. 'address is Calle Mayor 12, Madrid'"
+        elif destination_address == "":
             response = "Please book a taxi to a concrete address, for e.g. 'book taxi to Calle Mayor 12, Madrid'"
         else:
-            print(address)
-            coordinates = utilities.get_geocoordinates(address)
-            global ADDRESS
-            ADDRESS = address
+            destination_coordinates = utilities.get_geocoordinates(destination_address)
+            DESTINATION_ADDRESS = destination_address
             taxi_info = request_taxi()
             if taxi_info:
                 response = "Successfully requested taxi {}. Taxi status is now '{}'.".format(taxi_info["name"], 
@@ -124,6 +135,8 @@ def handle_command(command, channel):
         channel=channel,
         text=response or default_response
     )
+
+    return response or default_response
 
 def get_taxis(city=''):
     if city:
@@ -171,6 +184,7 @@ if __name__ == "__main__":
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
         while True:
             command, channel = parse_bot_commands(slack_client.rtm_read())
+            print("Slack read is: {}".format(slack_client.rtm_read()))
             if command:
                 handle_command(command, channel)
             time.sleep(RTM_READ_DELAY)
