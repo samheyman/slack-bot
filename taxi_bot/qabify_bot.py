@@ -13,12 +13,14 @@ import utilities
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
 # starterbot's user ID in Slack: value is assigned after the bot starts up
 starterbot_id = None
+google_api_key = os.environ.get('GOOGLE_API_KEY')
 
 # constants
 RTM_READ_DELAY = 1 # 1 second delay between reading from RTM
 EXAMPLE_COMMAND = ("all taxis", "all taxis in Madrid", "book taxi to Calle Mayor 12, Madrid")
 MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
-TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
+# TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
+TAXI_ENDPOINT = "http://localhost:8080/taxis"
 CITY = ""
 ADDRESS = ""
 COORDINATES = (0,0)
@@ -30,8 +32,6 @@ def parse_bot_commands(slack_events):
         If a bot command is found, this function returns a tuple of command and channel.
         If its not found, then this function returns None, None.
     """
-    print("slack event: {}".format(slack_events))
-
     for event in slack_events:
         print("Event: {}".format(event["type"]))
         if event["type"] == "message" and not "subtype" in event:
@@ -91,6 +91,7 @@ def handle_command(command, channel):
         taxis = get_taxis()
         if taxis:
             response = "There are currently {} taxis in the system.".format(len(taxis))
+            response += "\nPlease specify your city. For e.g. you can ask me \"all taxis in Madrid\" "
         else:
             response = "Sorry, there are currently no taxis in the system."
 
@@ -104,9 +105,10 @@ def handle_command(command, channel):
                 lat = taxi_info["location"]["lat"]
                 lon = - taxi_info["location"]["lon"]
                 dist = utilities.get_distance((40.415970, -3.712050), (lat, lon))
-                map_url = "https://www.google.com/maps/search/?api=1&query={},{}".format(lat, lon)
-                response = "Taxi {} is {}, distance: {}km (see <{}|map>)".format(taxi_id, taxi_info["state"], 
-                        dist, map_url)
+                map_url = "https://www.google.com/maps/search/?query={},{}&api={}".format(
+                    lat, lon, google_api_key)
+                response = "Taxi {} is {}, distance: {}km (see <{}|map>)".format(
+                    taxi_id, taxi_info["state"], dist, map_url)
             else:
                 response = "Could not get information for taxi {}".format(taxi_id)
 
@@ -120,6 +122,7 @@ def handle_command(command, channel):
             destination_coordinates = utilities.get_geocoordinates(destination_address)
             DESTINATION_ADDRESS = destination_address
             taxi_info = request_taxi()
+            print(taxi_info)
             if taxi_info:
                 response = "Successfully requested taxi {}. Taxi status is now '{}'.".format(taxi_info["name"], 
                            taxi_info["state"])
@@ -133,23 +136,29 @@ def handle_command(command, channel):
     slack_client.api_call(
         "chat.postMessage",
         channel=channel,
-        text=response or default_response
+        text=response or default_response,
+        # attachments= [
+        #     {
+        #         "image_url": "https://www.sciencemag.org/sites/default/files/styles/article_main_image_-_1280w__no_aspect_/public/cc_E2B865_hires_16x9.jpg?itok=cRrAYAq9",
+        #         "text": "And here’s an attachment!"
+        #     }
+        # ]
     )
 
     return response or default_response
 
 def get_taxis(city=''):
     if city:
-        url = TAXI_ENDPOINT + '/' + city
+        url = TAXI_ENDPOINT + '/' + city.lower()
     else:
         url = TAXI_ENDPOINT
     taxis = utilities.api_call(url)
-    return taxis
+    return taxis["data"]
 
 def get_taxi_info(city, taxi_id):
     url = TAXI_ENDPOINT + '/' + city + "/" + taxi_id
     taxi_info = utilities.api_call(url)
-    return taxi_info
+    return taxi_info["data"]
 
 def get_nearest_taxi(city=None):
     all_taxis = get_taxis(city)
@@ -175,7 +184,7 @@ def request_taxi(city='', taxi_id=''):
     url = "{}/{}/{}".format(TAXI_ENDPOINT, city, taxi_id)
     body = parse.urlencode({"state": "hired"}).encode()
     requested_taxi = utilities.api_call(url, body) 
-    return requested_taxi
+    return requested_taxi["data"]
 
 if __name__ == "__main__":
     if slack_client.rtm_connect(with_team_state=False):
@@ -184,7 +193,7 @@ if __name__ == "__main__":
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
         while True:
             command, channel = parse_bot_commands(slack_client.rtm_read())
-            print("Slack read is: {}".format(slack_client.rtm_read()))
+            #print("Slack read is: {}".format(slack_client.rtm_read()))
             if command:
                 handle_command(command, channel)
             time.sleep(RTM_READ_DELAY)

@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+certifi = "==2018.8.24"
+chardet = "==3.0.4"
+idna = "==2.7"
+pluggy = "==0.7.1"
+py = "==1.6.0"
+requests = "==2.19.1"
+selenium = "==3.14.0"
+six = "==1.11.0"
+slackclient = "==1.2.1"
+tox = "==3.2.1"
+urllib3 = "==1.23"
+virtualenv = "==16.0.0"
+flake8 = "==3.5.0"
+flake8-quotes = "==0.14.0"
+websocket_client = "==0.54.0"
+
+[requires]
+python_version = "3.7"

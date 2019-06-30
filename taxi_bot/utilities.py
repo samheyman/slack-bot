@@ -24,7 +24,8 @@ def api_call(url, body=None):
 
 def get_geocoordinates(address):
     address_to_search = parse.quote(address, safe='')
-    url = "https://maps.googleapis.com/maps/api/geocode/json?address=" + address_to_search + "&key=" + google_api_key
+    url = "https://maps.googleapis.com/maps/api/geocode/json?address={}&key={}".format(
+           address_to_search, google_api_key)
     response = api_call(url)
     lat = response["results"][0]["geometry"]["location"]["lat"]
     lon = response["results"][0]["geometry"]["location"]["lng"]
