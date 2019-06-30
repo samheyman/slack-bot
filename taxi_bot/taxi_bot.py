@@ -6,7 +6,6 @@ from math import radians, cos, sin, asin, sqrt
 import json
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
-#from qabify_bot import utilities
 import utilities
 
 # instantiate Slack client
@@ -19,8 +18,8 @@ google_api_key = os.environ.get('GOOGLE_API_KEY')
 RTM_READ_DELAY = 1 # 1 second delay between reading from RTM
 EXAMPLE_COMMAND = ("all taxis", "all taxis in Madrid", "book taxi to Calle Mayor 12, Madrid")
 MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
-# TAXI_ENDPOINT = "http://130.211.103.134:4000/api/v1/taxis"
-TAXI_ENDPOINT = "http://localhost:8080/taxis"
+TAXI_ENDPOINT = "http://130.211.103.134:4000/taxis"
+# TAXI_ENDPOINT = "http://localhost:8080/taxis"
 CITY = ""
 ADDRESS = ""
 COORDINATES = (0,0)
@@ -188,7 +187,7 @@ def request_taxi(city='', taxi_id=''):
 
 if __name__ == "__main__":
     if slack_client.rtm_connect(with_team_state=False):
-        print("QAbify Bot connected and running!")
+        print("Taxi Bot connected and running!")
         # Read bot's user ID by calling Web API method `auth.test`
         starterbot_id = slack_client.api_call("auth.test")["user_id"]
         while True:
