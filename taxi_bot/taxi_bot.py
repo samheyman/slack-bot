@@ -76,8 +76,8 @@ def handle_command(command, channel):
         city = city.split(' ')[0]
         CITY = city
         taxis = get_taxis(city)
-        print(taxis)
-        if taxis:
+        print("Response is {}".format(taxis))
+        if taxis and len(taxis) >= 1:
             taxiOrTaxis = 'taxis' if len(taxis) > 1 else 'taxi'
             response = "Found {} {} in {}:".format(len(taxis), taxiOrTaxis, city)
             for taxi in taxis:
