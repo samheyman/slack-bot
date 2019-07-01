@@ -6,7 +6,10 @@ from math import radians, cos, sin, asin, sqrt
 import json
 from urllib import request, parse
 from urllib.error import URLError, HTTPError
-import utilities
+try:
+    from . import utilities
+except:
+        import utilities
 
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -18,8 +21,9 @@ google_api_key = os.environ.get('GOOGLE_API_KEY')
 RTM_READ_DELAY = 1 # 1 second delay between reading from RTM
 EXAMPLE_COMMAND = ("all taxis", "all taxis in Madrid", "book taxi to Calle Mayor 12, Madrid")
 MENTION_REGEX = "^<@(|[WU].+?)>(.*)"
-TAXI_ENDPOINT = "http://130.211.103.134:4000/taxis"
+#TAXI_ENDPOINT = "http://130.211.103.134:4000/taxis"
 # TAXI_ENDPOINT = "http://localhost:8080/taxis"
+TAXI_ENDPOINT = "https://mock-travel-apis.herokuapp.com/taxis"
 CITY = ""
 ADDRESS = ""
 COORDINATES = (0,0)
@@ -72,8 +76,10 @@ def handle_command(command, channel):
         city = city.split(' ')[0]
         CITY = city
         taxis = get_taxis(city)
+        print(taxis)
         if taxis:
-            response = "There are currently {} taxis in {}:".format(len(taxis), city)
+            taxiOrTaxis = 'taxis' if len(taxis) > 1 else 'taxi'
+            response = "Found {} {} in {}:".format(len(taxis), taxiOrTaxis, city)
             for taxi in taxis:
                 response += "\n - {}".format(taxi["name"])
         else:

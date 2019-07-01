@@ -13,13 +13,10 @@ def api_call(url, body=None):
     print("API call to: {}".format(url))
     try:
         response = request.urlopen(req, body)
-        print(response.code)
+        #print(response.code)
         return json.load(response)
-    except HTTPError as e:
-        print('Error code: ', e.code)
-        return None
-    except URLError as e:
-        print('Reason: ', e.reason)
+    except:
+        print('Error retrieving taxis')
         return None
 
 def get_geocoordinates(address):
